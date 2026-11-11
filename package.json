@@ -1,0 +1,29 @@
+{
+  "name": "prepack",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MedPre-Pack — ระบบบันทึกการจัดทำ Pre-pack ยา และพิมพ์ฉลากบาร์โค้ด",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "jsbarcode": "^3.12.3",
+    "lucide-react": "^1.72.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/jsbarcode": "^3.11.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}

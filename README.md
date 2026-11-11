@@ -40,6 +40,22 @@ npm run preview  # serve the production build
 
 Without a sheet URL the app records everything locally and labels still print normally.
 
+### Saving the connection for every device
+
+The URL a user saves in the settings dialog lives in that browser's `localStorage`. To have the
+whole team connect automatically, put the same Web App URL in `public/sheet-config.json`:
+
+```json
+{ "sheetUrl": "https://script.google.com/macros/s/AKfycb.../exec" }
+```
+
+The app fetches this file at startup, so rebuilding and redeploying connects every device that
+opens the site. A URL saved in an individual browser still takes precedence, and "ยกเลิกการเชื่อมต่อ"
+disconnects only that browser while the site default stays available.
+
+Note: this URL ends up in the public app bundle; anyone who can open the app can append rows to the
+sheet. Keep the sheet itself restricted and treat the URL as internal to the pharmacy.
+
 ## Printing labels
 
 Set the thermal printer to **60 × 40 mm** media with scaling at 100%. The page size and label

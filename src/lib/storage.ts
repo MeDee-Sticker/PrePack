@@ -5,7 +5,7 @@ const RECORDS_KEY = 'prepack.records.v1';
 const SETTINGS_KEY = 'prepack.settings.v1';
 
 export const DEFAULT_SETTINGS: Settings = {
-  sheetUrl: '',
+  sheetUrlOverride: null,
   preparers: ['จพ.ภ. สมศรี มีสุข', 'จพ.ภ. วีระ ขยันยิ่ง', 'พช.ภ. นภา ใจดี'],
   pharmacists: [
     'ภก. สมชาย ใจดี (ภ.12345)',
@@ -68,9 +68,14 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
-    const parsed = JSON.parse(raw) as Partial<Settings>;
+    const parsed = JSON.parse(raw) as Partial<Settings> & { sheetUrl?: unknown };
+
+    // Older builds stored the URL as `sheetUrl`; keep it as a local override.
+    const legacy = typeof parsed.sheetUrl === 'string' && parsed.sheetUrl ? parsed.sheetUrl : null;
+    const override = typeof parsed.sheetUrlOverride === 'string' ? parsed.sheetUrlOverride : legacy;
+
     return {
-      sheetUrl: typeof parsed.sheetUrl === 'string' ? parsed.sheetUrl : '',
+      sheetUrlOverride: override,
       preparers: Array.isArray(parsed.preparers) ? parsed.preparers : DEFAULT_SETTINGS.preparers,
       pharmacists: Array.isArray(parsed.pharmacists)
         ? parsed.pharmacists

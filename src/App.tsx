@@ -18,6 +18,7 @@ import {
 import { buildTSV, copyText, downloadCSV } from './lib/export';
 import { sendToSheet } from './lib/sheets';
 import { loadRecords, loadSettings, makeSampleRecords, saveRecords, saveSettings } from './lib/storage';
+import { loadSiteConfig } from './lib/siteConfig';
 import { expiryState, todayISO } from './lib/date';
 import type { PrepackFormValues, PrepackRecord, Settings, TabKey, ToastKind, ToastState } from './types';
 
@@ -27,6 +28,7 @@ export default function App() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [records, setRecords] = useState<PrepackRecord[]>(loadRecords);
   const [settings, setSettings] = useState<Settings>(loadSettings);
+  const [siteSheetUrl, setSiteSheetUrl] = useState('');
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState<ToastState | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -40,6 +42,16 @@ export default function App() {
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    let active = true;
+    void loadSiteConfig().then((config) => {
+      if (active && config.sheetUrl) setSiteSheetUrl(config.sheetUrl);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const notify = useCallback((message: string, kind: ToastKind = 'success') => {
     setToast({ id: Date.now(), message, kind });
@@ -114,7 +126,8 @@ export default function App() {
   const unsyncedCount = records.filter((record) => !record.synced).length;
   const todayCount = records.filter((record) => record.prepackDate === todayISO()).length;
   const expiringCount = records.filter((record) => expiryState(record.expDate) !== 'valid').length;
-  const sheetConnected = Boolean(settings.sheetUrl);
+  const sheetUrl = settings.sheetUrlOverride ?? siteSheetUrl;
+  const sheetConnected = Boolean(sheetUrl);
 
   async function handleSubmit() {
     const nextErrors = validateForm(form);
@@ -130,9 +143,9 @@ export default function App() {
 
     let synced = false;
     let syncFailed = false;
-    if (settings.sheetUrl) {
+    if (sheetUrl) {
       try {
-        await sendToSheet(settings.sheetUrl, record);
+        await sendToSheet(sheetUrl, record);
         synced = true;
       } catch {
         syncFailed = true;
@@ -164,13 +177,13 @@ export default function App() {
   }
 
   async function handleSyncOne(record: PrepackRecord) {
-    if (!settings.sheetUrl) {
+    if (!sheetUrl) {
       setSheetOpen(true);
       return;
     }
     setBusy(true);
     try {
-      await sendToSheet(settings.sheetUrl, record);
+      await sendToSheet(sheetUrl, record);
       setRecords((prev) =>
         prev.map((item) =>
           item.id === record.id ? { ...item, synced: true, syncedAt: new Date().toISOString() } : item,
@@ -185,7 +198,7 @@ export default function App() {
   }
 
   async function handleSyncAll() {
-    if (!settings.sheetUrl) {
+    if (!sheetUrl) {
       setSheetOpen(true);
       return;
     }
@@ -200,7 +213,7 @@ export default function App() {
     let failed = 0;
     for (const record of pending) {
       try {
-        await sendToSheet(settings.sheetUrl, record);
+        await sendToSheet(sheetUrl, record);
         sent.add(record.id);
       } catch {
         failed += 1;
@@ -384,17 +397,24 @@ export default function App() {
 
       <SheetModal
         open={sheetOpen}
-        sheetUrl={settings.sheetUrl}
+        effectiveUrl={sheetUrl}
+        override={settings.sheetUrlOverride}
+        siteUrl={siteSheetUrl}
         onClose={() => setSheetOpen(false)}
         onSave={(url) => {
-          setSettings((prev) => ({ ...prev, sheetUrl: url }));
+          setSettings((prev) => ({ ...prev, sheetUrlOverride: url }));
           setSheetOpen(false);
-          notify('เชื่อมต่อ Google Sheet สำเร็จ! พร้อมส่งข้อมูลอัตโนมัติ', 'success');
+          notify('บันทึกและเชื่อมต่อ Google Sheet แล้ว! พร้อมส่งข้อมูลอัตโนมัติ', 'success');
         }}
         onDisconnect={() => {
-          setSettings((prev) => ({ ...prev, sheetUrl: '' }));
+          setSettings((prev) => ({ ...prev, sheetUrlOverride: '' }));
           setSheetOpen(false);
-          notify('ยกเลิกการเชื่อมต่อ Google Sheet แล้ว', 'warning');
+          notify('ยกเลิกการเชื่อมต่อ Google Sheet บนเบราว์เซอร์นี้แล้ว', 'warning');
+        }}
+        onUseSiteDefault={() => {
+          setSettings((prev) => ({ ...prev, sheetUrlOverride: null }));
+          setSheetOpen(false);
+          notify('ใช้ลิงก์ Google Sheet ที่ตั้งค่าไว้ส่วนกลางแล้ว', 'success');
         }}
       />
 

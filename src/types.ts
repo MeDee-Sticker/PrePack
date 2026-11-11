@@ -37,8 +37,13 @@ export interface PrepackFormValues {
 }
 
 export interface Settings {
-  /** Google Apps Script web app URL used to append rows to a sheet. */
-  sheetUrl: string;
+  /**
+   * Per-browser choice for the Google Sheet connection.
+   * `null` = follow the site-wide default from /sheet-config.json,
+   * `''` = explicitly disconnected on this browser,
+   * any other value = a URL saved on this browser only.
+   */
+  sheetUrlOverride: string | null;
   preparers: string[];
   pharmacists: string[];
   drugs: string[];

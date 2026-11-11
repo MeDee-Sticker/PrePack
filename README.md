@@ -46,8 +46,15 @@ The URL a user saves in the settings dialog lives in that browser's `localStorag
 whole team connect automatically, put the same Web App URL in `public/sheet-config.json`:
 
 ```json
-{ "sheetUrl": "https://script.google.com/macros/s/AKfycb.../exec" }
+{
+  "sheetUrl": "https://script.google.com/macros/s/AKfycb.../exec",
+  "spreadsheetUrl": "https://docs.google.com/spreadsheets/d/<id>/edit"
+}
 ```
+
+`sheetUrl` must be the Apps Script **Web App** deployment URL (ends with `/exec`); a
+`docs.google.com/spreadsheets/...` link is the spreadsheet page and cannot receive rows.
+`spreadsheetUrl` is only a shortcut shown as “เปิด Google Sheet” in the header.
 
 The app fetches this file at startup, so rebuilding and redeploying connects every device that
 opens the site. A URL saved in an individual browser still takes precedence, and "ยกเลิกการเชื่อมต่อ"

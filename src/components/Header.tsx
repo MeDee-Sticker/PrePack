@@ -1,11 +1,13 @@
-import { Link2Off, Pill, Settings2, Sheet } from 'lucide-react';
+import { ExternalLink, Link2Off, Pill, Settings2, Sheet } from 'lucide-react';
 
 interface HeaderProps {
   sheetConnected: boolean;
+  /** Saved Google Sheet link, when the site config provides one. */
+  spreadsheetUrl: string;
   onOpenSettings: () => void;
 }
 
-export default function Header({ sheetConnected, onOpenSettings }: HeaderProps) {
+export default function Header({ sheetConnected, spreadsheetUrl, onOpenSettings }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 bg-hospital-900 text-white shadow-lg">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -27,6 +29,19 @@ export default function Header({ sheetConnected, onOpenSettings }: HeaderProps) 
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          {spreadsheetUrl && (
+            <a
+              href={spreadsheetUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+              title="เปิดไฟล์ Google Sheet ของงานเภสัชกรรม"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              <span>เปิด Google Sheet</span>
+            </a>
+          )}
+
           <button
             type="button"
             onClick={onOpenSettings}

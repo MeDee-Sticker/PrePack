@@ -1,15 +1,22 @@
 import { normalizeSheetUrl } from './sheets';
 
 export interface SiteConfig {
-  /** Google Apps Script Web App URL configured for everyone who opens the site. */
+  /**
+   * Google Apps Script Web App URL (ends with /exec) that rows are POSTed to.
+   * Empty when the site has not been wired to a sheet deployment yet.
+   */
   sheetUrl: string;
+  /** Human-facing Google Sheet link, shown as a shortcut in the header. */
+  spreadsheetUrl: string;
 }
 
+const EMPTY: SiteConfig = { sheetUrl: '', spreadsheetUrl: '' };
+
 /**
- * Read the site-wide connection from `/sheet-config.json`, which is served as a
- * static file next to the app. Storing it there (instead of in localStorage)
- * means the pharmacy's sheet is saved once for every device that opens the app.
- * A missing or invalid file simply means "not configured yet".
+ * Read site-wide settings from `/sheet-config.json`, served as a static file
+ * next to the app. Keeping the sheet wiring here (instead of in localStorage)
+ * means it is saved once for every device that opens the site. A missing or
+ * invalid file simply means "not configured yet".
  */
 export async function loadSiteConfig(): Promise<SiteConfig> {
   try {
@@ -17,14 +24,21 @@ export async function loadSiteConfig(): Promise<SiteConfig> {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     });
-    if (!response.ok) return { sheetUrl: '' };
+    if (!response.ok) return EMPTY;
 
     const data: unknown = await response.json();
-    if (!data || typeof data !== 'object') return { sheetUrl: '' };
+    if (!data || typeof data !== 'object') return EMPTY;
 
-    const url = (data as { sheetUrl?: unknown }).sheetUrl;
-    return { sheetUrl: typeof url === 'string' ? normalizeSheetUrl(url) : '' };
+    const { sheetUrl, spreadsheetUrl } = data as {
+      sheetUrl?: unknown;
+      spreadsheetUrl?: unknown;
+    };
+
+    return {
+      sheetUrl: typeof sheetUrl === 'string' ? normalizeSheetUrl(sheetUrl) : '',
+      spreadsheetUrl: typeof spreadsheetUrl === 'string' ? spreadsheetUrl.trim() : '',
+    };
   } catch {
-    return { sheetUrl: '' };
+    return EMPTY;
   }
 }

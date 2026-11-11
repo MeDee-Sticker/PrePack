@@ -29,6 +29,7 @@ export default function App() {
   const [records, setRecords] = useState<PrepackRecord[]>(loadRecords);
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [siteSheetUrl, setSiteSheetUrl] = useState('');
+  const [siteSpreadsheetUrl, setSiteSpreadsheetUrl] = useState('');
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState<ToastState | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -46,7 +47,9 @@ export default function App() {
   useEffect(() => {
     let active = true;
     void loadSiteConfig().then((config) => {
-      if (active && config.sheetUrl) setSiteSheetUrl(config.sheetUrl);
+      if (!active) return;
+      if (config.sheetUrl) setSiteSheetUrl(config.sheetUrl);
+      if (config.spreadsheetUrl) setSiteSpreadsheetUrl(config.spreadsheetUrl);
     });
     return () => {
       active = false;
@@ -272,7 +275,11 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header sheetConnected={sheetConnected} onOpenSettings={() => setSheetOpen(true)} />
+      <Header
+        sheetConnected={sheetConnected}
+        spreadsheetUrl={siteSpreadsheetUrl}
+        onOpenSettings={() => setSheetOpen(true)}
+      />
 
       <main className="mx-auto w-full max-w-7xl flex-grow px-4 py-6 sm:px-6 lg:px-8">
         {!sheetConnected && (

@@ -81,6 +81,12 @@ export default function SheetModal({
       setError('กรุณาวาง Web App URL ก่อนบันทึก');
       return;
     }
+    if (/^https?:\/\/(docs\.)?google\.com\/spreadsheets\//i.test(url)) {
+      setError(
+        'ลิงก์นี้คือไฟล์ Google Sheet ไม่ใช่ Web App URL — ต้องคัดลอกลิงก์จาก Deploy > Web app ซึ่งลงท้ายด้วย /exec',
+      );
+      return;
+    }
     if (!isValidSheetUrl(url)) {
       setError('ลิงก์ต้องขึ้นต้นด้วย https://script.google.com/macros/s/... และลงท้ายด้วย /exec');
       return;
